@@ -6,8 +6,9 @@ local Settings = {}
 
 Settings.Debug = true
 
--- Порядок слотов = порядок клавиш 1, 2, 3.
-Settings.DefaultLoadout = { "MAC10", "SPAS12", "Machete" }
+-- Порядок слотов = порядок клавиш 1, 2, 3, 4, 5.
+-- Набор оружия по ТЗ: снайпер R-700, дробовики PS-12/AS-12, бита и мачете.
+Settings.DefaultLoadout = { "R700", "PS12", "AS12", "Bita", "Machete" }
 
 -- Тестовый полигон (стенд, мишени). На проде выключить.
 Settings.BuildTestRange = true
