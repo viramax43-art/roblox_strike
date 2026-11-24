@@ -69,10 +69,6 @@ function WeaponController.new(cameraController, viewModel, effects, hud)
 
 	self.triggerDown = false
 
-	self.raycastParams = RaycastParams.new()
-	self.raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-	self.raycastParams.IgnoreWater = true
-
 	return self
 end
 
@@ -114,9 +110,11 @@ function WeaponController:applyEquipped(payload)
 		self.reserve = 0
 		self.reloading = false
 		self.equipUntil = os.clock() + 0.4
+		self.cameraController:setAiming(false)
 		self.viewModel:setMelee(config)
 		self.hud:setWeapon(self.weaponId, config, nil)
 		self.hud:setCrosshairVisible(false)
+		self.hud:setScopeVisible(false)
 		return
 	end
 
@@ -133,6 +131,7 @@ function WeaponController:applyEquipped(payload)
 	self.cameraController:setZoom(stats.Zoom or 1)
 	self.hud:setWeapon(self.weaponId, stats, self.attachments)
 	self.hud:setCrosshairVisible(true)
+	self.hud:setScopeVisible(false)
 end
 
 function WeaponController:applyAmmo(payload)
@@ -191,7 +190,17 @@ function WeaponController:onState(payload)
 end
 
 function WeaponController:setAiming(aiming)
-	self.cameraController:setAiming((not self.melee) and aiming)
+	aiming = (not self.melee) and aiming
+	self.cameraController:setAiming(aiming)
+	self:updateAimVisuals(aiming)
+end
+
+-- Прицел и оптика: обычный крестик при бедре/коллиматоре, полноэкранная
+-- оптика для модулей со ScopeOverlay (ACOG, Оптика 8x).
+function WeaponController:updateAimVisuals(aiming)
+	local scoped = aiming and self.stats and self.stats.ScopeOverlay == true
+	self.hud:setScopeVisible(scoped)
+	self.hud:setCrosshairVisible(not self.melee and not scoped)
 end
 
 function WeaponController:cycleFireMode()
@@ -236,6 +245,8 @@ function WeaponController:tryMelee()
 end
 
 -- Точка выстрела: ствол оружия + направление на точку под прицелом.
+-- aimPoint берём из камеры (та же точка, что наводит вьюмодель), чтобы ствол,
+-- трейсер и крестик всегда совпадали.
 function WeaponController:getShotRay()
 	local camera = workspace.CurrentCamera
 	local muzzle = self.viewModel:getMuzzlePosition()
@@ -243,17 +254,14 @@ function WeaponController:getShotRay()
 		return nil, nil
 	end
 
-	local character = Players.LocalPlayer.Character
-	self.raycastParams.FilterDescendantsInstances = { character }
-
-	local cameraOrigin = camera.CFrame.Position
-	local look = camera.CFrame.LookVector
-	local result = workspace:Raycast(cameraOrigin, look * 500, self.raycastParams)
-	local aimPoint = result and result.Position or (cameraOrigin + look * 500)
+	local aimPoint = self.cameraController:getAimPoint()
+	if not aimPoint then
+		return muzzle, camera.CFrame.LookVector
+	end
 
 	local delta = aimPoint - muzzle
 	if delta.Magnitude < 3 then
-		return muzzle, look
+		return muzzle, camera.CFrame.LookVector
 	end
 
 	return muzzle, delta.Unit

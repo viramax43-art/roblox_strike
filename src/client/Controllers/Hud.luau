@@ -77,6 +77,51 @@ function Hud.new()
 	dot.Parent = crosshair
 	self.dot = dot
 
+	-- Оптический прицел: чёрная виньетка с «линзой» по центру и крестом.
+	-- Включается для модулей со ScopeOverlay (ACOG, Оптика 8x) при прицеливании.
+	local scope = Instance.new("Frame")
+	scope.Name = "ScopeOverlay"
+	scope.Size = UDim2.fromScale(1, 1)
+	scope.BackgroundTransparency = 1
+	scope.Visible = false
+	scope.ZIndex = 10
+	scope.Parent = gui
+	self.scope = scope
+
+	self.scopeBorders = {}
+	for _, side in ipairs({ "Top", "Bottom", "Left", "Right" }) do
+		local border = Instance.new("Frame")
+		border.Name = side
+		border.BackgroundColor3 = Color3.new(0, 0, 0)
+		border.BorderSizePixel = 0
+		border.Parent = scope
+		self.scopeBorders[side] = border
+	end
+
+	local scopeCrosshair = Instance.new("Frame")
+	scopeCrosshair.Name = "ScopeCrosshair"
+	scopeCrosshair.AnchorPoint = Vector2.new(0.5, 0.5)
+	scopeCrosshair.Position = UDim2.fromScale(0.5, 0.5)
+	scopeCrosshair.Size = UDim2.fromOffset(0, 0)
+	scopeCrosshair.BackgroundTransparency = 1
+	scopeCrosshair.ZIndex = 11
+	scopeCrosshair.Parent = scope
+	self.scopeCrosshair = scopeCrosshair
+
+	for _, axis in ipairs({ "H", "V" }) do
+		local scopeLine = Instance.new("Frame")
+		scopeLine.AnchorPoint = Vector2.new(0.5, 0.5)
+		scopeLine.Position = UDim2.fromScale(0.5, 0.5)
+		scopeLine.BackgroundColor3 = Color3.new(0.03, 0.03, 0.03)
+		scopeLine.BorderSizePixel = 0
+		if axis == "H" then
+			scopeLine.Size = UDim2.fromOffset(360, 1)
+		else
+			scopeLine.Size = UDim2.fromOffset(1, 360)
+		end
+		scopeLine.Parent = scopeCrosshair
+	end
+
 	-- Панель оружия.
 	local panel = Instance.new("Frame")
 	panel.Name = "Panel"
@@ -230,6 +275,39 @@ function Hud:hitmarker()
 			self.hitmarkerFrame.Visible = false
 		end
 	end)
+end
+
+-- Оптический прицел: по центру остаётся «линза», вокруг — чёрная виньетка.
+function Hud:updateScopeLayout()
+	local camera = workspace.CurrentCamera
+	if not camera then
+		return
+	end
+
+	local width = camera.ViewportSize.X
+	local height = camera.ViewportSize.Y
+	local lens = math.min(360, math.floor(width * 0.5), math.floor(height * 0.5))
+	local top = math.floor((height - lens) / 2)
+	local left = math.floor((width - lens) / 2)
+
+	self.scopeBorders.Top.Size = UDim2.fromOffset(width, math.max(0, top))
+	self.scopeBorders.Top.Position = UDim2.fromOffset(0, 0)
+
+	self.scopeBorders.Bottom.Size = UDim2.fromOffset(width, math.max(0, top))
+	self.scopeBorders.Bottom.Position = UDim2.fromOffset(0, top + lens)
+
+	self.scopeBorders.Left.Size = UDim2.fromOffset(math.max(0, left), lens)
+	self.scopeBorders.Left.Position = UDim2.fromOffset(0, top)
+
+	self.scopeBorders.Right.Size = UDim2.fromOffset(math.max(0, left), lens)
+	self.scopeBorders.Right.Position = UDim2.fromOffset(left + lens, top)
+end
+
+function Hud:setScopeVisible(visible)
+	self.scope.Visible = visible and true or false
+	if visible then
+		self:updateScopeLayout()
+	end
 end
 
 return Hud

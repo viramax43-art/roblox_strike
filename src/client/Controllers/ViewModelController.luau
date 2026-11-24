@@ -219,9 +219,7 @@ function ViewModelController:update(deltaTime)
 
 	local camera = workspace.CurrentCamera
 	local character = Players.LocalPlayer.Character
-	local hand = character and (character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm"))
-
-	if not camera or not hand or not character.Parent then
+	if not camera or not character or not character.Parent then
 		if model.Parent then
 			model.Parent = nil
 		end
@@ -229,17 +227,45 @@ function ViewModelController:update(deltaTime)
 		return
 	end
 
+	-- Вьюмодель живёт в камере и не реплицируется: это только визуал владельца.
 	if model.Parent ~= camera then
 		model:PivotTo(self.pose or camera.CFrame)
 		model.Parent = camera
 	end
 
 	local aiming = self.cameraController:isAiming()
+	local aimPoint = self.cameraController:getAimPoint()
 	local target
+
 	if self.cameraController:getMode() == "FirstPerson" then
-		target = camera.CFrame * (aiming and VIEW_MODEL.FirstPersonAim or VIEW_MODEL.FirstPersonHip)
+		-- От первого лица: оружие смещено в кадре, но ствол смотрит в центр экрана.
+		local base = camera.CFrame * (aiming and VIEW_MODEL.FirstPersonAim or VIEW_MODEL.FirstPersonHip)
+		if aimPoint then
+			target = CFrame.lookAt(base.Position, aimPoint)
+		else
+			target = base
+		end
 	else
-		target = hand.CFrame * VIEW_MODEL.ThirdPersonGrip
+		-- От третьего лица: оружие в руках персонажа, ствол наведён на крестик.
+		local hand = character:FindFirstChild("RightHand") or character:FindFirstChild("Right Arm")
+		local head = character:FindFirstChild("Head")
+		local root = character:FindFirstChild("HumanoidRootPart")
+
+		local anchor
+		if aiming then
+			anchor = (head and head.Position) or (root and root.Position + Vector3.new(0, 1.5, 0)) or camera.CFrame.Position
+			anchor = anchor + camera.CFrame.RightVector * VIEW_MODEL.ThirdPersonAimSide
+			anchor = anchor + Vector3.new(0, VIEW_MODEL.ThirdPersonAimHeight, 0)
+		else
+			anchor = (hand and hand.Position) or (root and root.Position + Vector3.new(0, 0.5, 0)) or camera.CFrame.Position
+			anchor = anchor + Vector3.new(0, VIEW_MODEL.ThirdPersonHipDrop, 0)
+		end
+
+		if aimPoint then
+			target = CFrame.lookAt(anchor, aimPoint)
+		else
+			target = camera.CFrame
+		end
 	end
 
 	self.pose = self.pose and self.pose:Lerp(target, math.min(deltaTime * VIEW_MODEL.BlendSpeed, 1)) or target

@@ -82,6 +82,34 @@ function CameraController:getAimRay()
 	return camera.CFrame.Position, camera.CFrame.LookVector
 end
 
+-- Точка в мире, на которую указывает центр экрана (крестик).
+-- Одна и та же точка для постановки оружия и луча выстрела — поэтому ствол,
+-- трейсер и прицел всегда совпадают.
+function CameraController:getAimPoint(maxDistance)
+	maxDistance = maxDistance or 500
+	local camera = workspace.CurrentCamera
+	if not camera then
+		return nil
+	end
+
+	local origin = camera.CFrame.Position
+	local look = camera.CFrame.LookVector
+
+	local params = RaycastParams.new()
+	params.FilterType = Enum.RaycastFilterType.Exclude
+	params.IgnoreWater = true
+	local character = Players.LocalPlayer.Character
+	if character then
+		params.FilterDescendantsInstances = { character }
+	end
+
+	local result = workspace:Raycast(origin, look * maxDistance, params)
+	if result then
+		return result.Position
+	end
+	return origin + look * maxDistance
+end
+
 function CameraController:applyVisibility()
 	local character = Players.LocalPlayer.Character
 	if not character then

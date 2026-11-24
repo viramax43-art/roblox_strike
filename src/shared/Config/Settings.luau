@@ -36,9 +36,9 @@ Settings.View = {
 	DefaultMode = "ThirdPerson", -- "ThirdPerson" | "FirstPerson"
 	ToggleModeKey = Enum.KeyCode.V,
 
-	-- Плечевая камера (TPS)
-	ThirdPersonOffset = CFrame.new(1.9, 2.1, 6.8),
-	ThirdPersonAimOffset = CFrame.new(1.0, 1.5, 3.4),
+	-- Плечевая камера (TPS), как в GTA: ближе к плечу, персонаж чуть левее центра.
+	ThirdPersonOffset = CFrame.new(1.7, 1.9, 5.4),
+	ThirdPersonAimOffset = CFrame.new(0.9, 1.4, 2.8),
 	-- Глаза (FPS)
 	FirstPersonEyeOffset = Vector3.new(0, 0.3, 0),
 
@@ -95,10 +95,12 @@ Settings.FriendlyFire = false
 -- поэтому все смещения вынесены сюда.
 Settings.ViewModel = {
 	BlendSpeed = 14, -- плавность перехода между позами
-	-- От третьего лица: оружие крепится к правой руке
-	ThirdPersonGrip = CFrame.new(0, -0.2, 0),
-	-- От первого лица: оружие в кадре справа снизу
-	FirstPersonHip = CFrame.new(0.55, -0.45, -1.2) * CFrame.Angles(0, math.rad(-4), 0),
+	-- От третьего лица: оружие в руках персонажа, ствол целится в крестик.
+	ThirdPersonHipDrop = -0.45, -- ниже руки при стрельбе от бедра
+	ThirdPersonAimSide = 0.35, -- правее головы (плечо) при прицеливании
+	ThirdPersonAimHeight = -0.35, -- ниже глаз при прицеливании
+	-- От первого лица: оружие в кадре справа снизу.
+	FirstPersonHip = CFrame.new(0.55, -0.45, -1.2),
 	FirstPersonAim = CFrame.new(0, -0.22, -0.85),
 }
 
