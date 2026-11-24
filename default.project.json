@@ -1,0 +1,56 @@
+{
+  "name": "RobloxStrike",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "Shared": {
+        "$path": "src/shared"
+      },
+      "Assets": {
+        "$className": "Folder",
+        "Weapons": {
+          "$className": "Folder",
+          "MAC10": {
+            "$path": "src/assets/weapons/mac10.rbxm"
+          },
+          "SPAS12": {
+            "$path": "src/assets/weapons/spas12.rbxm"
+          }
+        }
+      }
+    },
+
+    "ServerScriptService": {
+      "$className": "ServerScriptService",
+      "Server": {
+        "$path": "src/server"
+      }
+    },
+
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "Client": {
+          "$path": "src/client"
+        }
+      },
+      "$properties": {
+        "CharacterWalkSpeed": 16,
+        "CharacterJumpPower": 50,
+        "EnableMouseLockOption": false,
+        "CameraMinZoomDistance": 0.5,
+        "CameraMaxZoomDistance": 12
+      }
+    },
+
+    "Workspace": {
+      "$className": "Workspace",
+      "$properties": {
+        "Gravity": 196.2
+      }
+    }
+  }
+}

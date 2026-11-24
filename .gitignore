@@ -1,0 +1,21 @@
+# Rojo / Roblox
+*.rbxl
+*.rbxl.lock
+*.rbxlx
+*.rbxlx.lock
+*.rbxm.lock
+*.rbxmx.lock
+*.rbxlx~
+build/
+out/
+
+# Tools
+node_modules/
+tools/
+.rokit/
+.aftman/
+.vscode/
+
+# OS
+Thumbs.db
+.DS_Store
